@@ -1,0 +1,92 @@
+p {
+    margin: 0.75rem 0;
+    padding: 0;
+    width: 100%;
+}
+
+a.notlinkstyle {
+    all: initial;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 1.5em;
+}
+a.notlinkstyle * {
+    all: unset;
+}
+
+h1 {
+    font-size: 2em;
+}
+
+p.edit {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+ hr.dotted {
+    border-top: dotted 5px;
+    margin: 50px;
+ }
+
+ main.ZZcenter {
+    height: 590;
+    position: absolute;
+    top:0;
+    bottom:0;
+    margin-right:0;
+    margin-left:100;
+    margin-top:auto;
+    margin-bottom:auto;
+  }
+
+ input {
+    width: 100px;
+ }
+
+ p.Instructions {
+    font-size: 1em;
+    float: right;
+ }
+
+ p.Title {
+    font-size: 2em;
+ }
+
+ .onright {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    right:0;
+    width: 400px;
+    background-color: gainsboro;
+ }
+
+ .qrcode {
+    margin-top:15px; 
+    margin-left:100px;
+ }
+
+.rotate {
+    transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+  }
+
+
+ .two-columns-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+/* columns */
+.two-columns-grid > * {
+    padding:1rem;
+}
+
+
+@media print {
+    .editor {
+        display: none !important;
+    }
+
+    @page { margin: 0; }
+}

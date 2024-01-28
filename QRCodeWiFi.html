@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+    <!--
+https://github.com/davidshimjs/qrcodejs
+
+    -->
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="mvp.css" />
+    <link rel="stylesheet" href="mvp_modifications.css" />
+    <title>SCAN TO CONNECT TO WI-FI</title>
+    <script src="qrcode.js"></script>
+    <script>
+        function Log(str)
+        {
+            document.getElementById("uiLog").innerText += str + "\n"
+        }
+
+        // Percent-escape. Man, this is a terribly defined thing -- the WPA3 in 
+        // their infinite wisdom decided that 
+        function Escape(str)
+        {
+            var retval = "";
+            for (let index in str)
+            {
+                var ch = str[index];
+                var code = ch.charCodeAt(0);
+                //if (ch >= "a" && ch <= "z")
+                //{
+                //    // DBG: turn into ctrl
+                //    code = code - 96
+                //}
+                var alwaysEscape = false
+                if (code < 0x20 || ch == ";" || code > 0x7e || alwaysEscape)
+                {
+                    if (code < 0x80)
+                    {
+                        var hex = code.toString(16);
+                        if (hex.length == 1) hex = "0" + hex;
+                        retval += "%" + hex;
+                    }
+                    else
+                    {
+                        retval += encodeURIComponent(ch)
+                    }
+                }
+                else
+                {
+                    retval += ch;
+                }
+            }
+
+            return retval;
+        }
+
+        function MakeQRCodeUrl(ssid, password)
+        {
+            var type = "WPA";
+            if (password == "") type = ""
+            var qrtext = "WIFI:";
+            // Correct order per the WPA3 spec: T S P. T can be WPA or nothing.
+            if (password != "")
+            {
+                qrtext += "T:WPA;";
+            }
+            qrtext += "S:" + Escape(ssid) + ";";
+            if (password != "")
+            {
+                qrtext += "P:" + Escape(password) + ";";
+            }
+            qrtext += ";"; // Always ends with two semi-colons
+            return qrtext
+        }
+        
+        function DoMakeQRCodeSsid()
+        {
+            var ssid = document.getElementById("uiSsid").value;
+            var password = document.getElementById("uiPassword").value;
+            var qrtext = MakeQRCodeUrl(ssid, password);
+            document.getElementById("uiRawText").value = qrtext;
+
+            // Draw the QR code
+            var poster = document.getElementById("uiPosterFlip");
+            poster.innerHTML = "";
+            DrawPoster(poster, qrtext, ssid, password);
+
+            poster = document.getElementById("uiPosterNormal");
+            poster.innerHTML = "";
+            DrawPoster(poster, qrtext, ssid, password);
+
+        }
+
+        function DoMakeQRCodeRaw()
+        {
+            var elText = document.getElementById("uiRawText");
+            var qrtext = elText.value;
+
+            var poster = document.getElementById("uiPosterFlip");
+            poster.innerHTML = "";
+            DrawPoster(poster, qrtext, "", "");
+
+            poster = document.getElementById("uiPosterNormal");
+            poster.innerHTML = "";
+            DrawPoster(poster, qrtext, "", "");
+        }
+
+
+
+        var title = "Scan here to To connect to Wi-Fi";
+        var instructions = `To scan a QR code with Windows, <ul><li>Start the camera app. 
+<li>Point your camera at the QR code. <li>When the QR code is recognized, it will show up
+as a pop-up in the camera.<li>Click it to start the connection process.</ul>
+`;
+        var info = "Wi-Fi network <a class=\"notlinkstyle\" href={qrurl}><b>{ssid}<b></a>";
+        var size = 270;
+
+
+        //
+        // Make one poster section including the title, instructions, the information,
+        // and of course the QR code
+        //
+        function DrawPoster(parent, qrtext, ssid, password)
+        {
+            var elTitle = document.createElement("p");
+            elTitle.className = "Title"
+            elTitle.innerText = title;
+
+            var elInstructions = document.createElement("p");
+            elInstructions.className = "Instructions"
+            elInstructions.innerHTML = instructions;
+
+            var elQR = document.createElement("div");
+            elQR.className = "qrcode";
+
+            var twocol = document.createElement("div");
+            twocol.className="two-columns-grid";
+            twocol.append(elQR, elInstructions);
+
+            var qrcode = new QRCode(elQR, { width : size, height : size });
+            qrcode.makeCode(qrtext);            
+
+            var elInfo = document.createElement("p");
+            elInfo.className = "Info";
+            if (ssid != "")
+            {
+                // Not a real WIFI URl, so just do it raw
+                var infotext = info.replace("{ssid}", ssid).replace("{password}", password).replace("{qrurl}", qrtext);
+                elInfo.innerHTML = infotext;
+            }
+
+            parent.append (elTitle, twocol, elInfo);
+        }
+    </script> 
+</head>
+<body onload="DoMakeQRCodeSsid()">
+    <main class="center">
+        <div id="uiPosterFlip" class="rotate"></div>
+        <hr  class="dotted"/>
+        <div id="uiPosterNormal"  ></div>
+    </main>
+
+    <aside class="editor onright" >
+        <p>Enter either the SSID and password of the QR code, or enter the raw text to encode.
+        </p>
+        <p>Type ^P to print the form. Only the QR codes and instructions will print; this little editor
+            pane will not print.
+        </p>
+        <form>
+            <label>SSID (Network name)</label>
+            <input type="text" id="uiSsid" value="starpainter" oninput="DoMakeQRCodeSsid()" />
+            <label>Password</label>
+            <input type="text" id="uiPassword" value="1234567890" oninput="DoMakeQRCodeSsid()" />
+            <button type="button" onclick="DoMakeQRCodeSsid()">Generate QR Code</button>
+
+            <br /><br /><br />
+            <label>Text to Encode</label>
+            <input type="text" id="uiRawText" value="wifi:s:guest;t:open;;" />
+            <button type="button" onclick="DoMakeQRCodeRaw()">Generate QR Code</button>
+
+        </form>
+        <div id="uiLog" />
+    </aside>
+</body>
+</html>
