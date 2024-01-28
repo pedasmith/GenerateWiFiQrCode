@@ -114,6 +114,18 @@ as a pop-up in the camera.<li>Click it to start the connection process.</ul>
         var info = "Wi-Fi network <a class=\"notlinkstyle\" href={qrurl}><b>{ssid}<b></a>";
         var size = 270;
 
+        function ReplaceMacros(text, ssid, password, qrtext)
+        {
+            var retval = text.replace("{ssid}", ssid).replace("{password}", password).replace("{qrurl}", qrtext);
+            return retval;
+        }
+
+        function OnLoad()
+        {
+            uiTitle.value = title;
+            uiInfo.value = info;
+            uiInstructions.value = instructions;
+        }
 
         //
         // Make one poster section including the title, instructions, the information,
@@ -121,13 +133,18 @@ as a pop-up in the camera.<li>Click it to start the connection process.</ul>
         //
         function DrawPoster(parent, qrtext, ssid, password)
         {
+            // Use the values from the UX and not the initial global values.
+            var title = document.getElementById("uiTitle").value;
+            var instructions = document.getElementById("uiInstructions").value;
+            var info = document.getElementById("uiInfo").value;
+
             var elTitle = document.createElement("p");
             elTitle.className = "Title"
-            elTitle.innerText = title;
+            elTitle.innerText = ReplaceMacros(title, ssid, password, qrtext);
 
             var elInstructions = document.createElement("p");
             elInstructions.className = "Instructions"
-            elInstructions.innerHTML = instructions;
+            elInstructions.innerHTML = ReplaceMacros(instructions, ssid, password, qrtext);
 
             var elQR = document.createElement("div");
             elQR.className = "qrcode";
@@ -144,15 +161,15 @@ as a pop-up in the camera.<li>Click it to start the connection process.</ul>
             if (ssid != "")
             {
                 // Not a real WIFI URl, so just do it raw
-                var infotext = info.replace("{ssid}", ssid).replace("{password}", password).replace("{qrurl}", qrtext);
-                elInfo.innerHTML = infotext;
+                //var infotext = info.replace("{ssid}", ssid).replace("{password}", password).replace("{qrurl}", qrtext);
+                elInfo.innerHTML = ReplaceMacros(info, ssid, password, qrtext);
             }
 
             parent.append (elTitle, twocol, elInfo);
         }
     </script> 
 </head>
-<body onload="DoMakeQRCodeSsid()">
+<body onload="OnLoad(); DoMakeQRCodeSsid();">
     <main class="center">
         <div id="uiPosterFlip" class="rotate"></div>
         <hr  class="dotted"/>
@@ -166,14 +183,21 @@ as a pop-up in the camera.<li>Click it to start the connection process.</ul>
             pane will not print.
         </p>
         <form>
-            <label>SSID (Network name)</label>
+            <label for="uiTitle">Title (text)</label>
+            <input type="text" id="uiTitle" value=""  />
+            <label for="uiInfo">Info (html)</label>
+            <input type="text" id="uiInfo" value=""  />
+            <label for="uiInstructions">Instructions (html)</label>
+            <textarea type="text" id="uiInstructions" rows="5" value="" ></textarea>
+
+            <label for="uiSsid">SSID (Network name)</label>
             <input type="text" id="uiSsid" value="starpainter" oninput="DoMakeQRCodeSsid()" />
-            <label>Password</label>
+            <label for="uiPassword">Password</label>
             <input type="text" id="uiPassword" value="1234567890" oninput="DoMakeQRCodeSsid()" />
             <button type="button" onclick="DoMakeQRCodeSsid()">Generate QR Code</button>
 
             <br /><br /><br />
-            <label>Text to Encode</label>
+            <label for="uiRawText">Text to Encode</label>
             <input type="text" id="uiRawText" value="wifi:s:guest;t:open;;" />
             <button type="button" onclick="DoMakeQRCodeRaw()">Generate QR Code</button>
 
